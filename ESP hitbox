@@ -1,0 +1,83 @@
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+
+local function getRoleColor(plr)
+    if (plr.Backpack:FindFirstChild("Knife") or (plr.Character and plr.Character:FindFirstChild("Knife"))) then
+        return Color3.new(1, 0, 0) -- rouge
+    elseif (plr.Backpack:FindFirstChild("Gun") or (plr.Character and plr.Character:FindFirstChild("Gun"))) then
+        return Color3.new(0, 0, 1) -- bleu
+    else
+        return Color3.new(0, 1, 0) -- vert
+    end
+end
+
+local function getRoleName(plr)
+    if (plr.Backpack:FindFirstChild("Knife") or (plr.Character and plr.Character:FindFirstChild("Knife"))) then
+        return "Meurtrier"
+    elseif (plr.Backpack:FindFirstChild("Gun") or (plr.Character and plr.Character:FindFirstChild("Gun"))) then
+        return "Shérif"
+    else
+        return "Innocent"
+    end
+end
+
+local function createOrUpdateESP(player)
+    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+
+    local esp = player.Character:FindFirstChild("StaffESP")
+    local roleName = getRoleName(player)
+    local roleColor = getRoleColor(player)
+
+    if not esp then
+        esp = Instance.new("BillboardGui")
+        esp.Name = "StaffESP"
+        esp.Adornee = player.Character.HumanoidRootPart
+        esp.Size = UDim2.new(0, 150, 0, 50)
+        esp.AlwaysOnTop = true
+        esp.Parent = player.Character
+
+        local textLabel = Instance.new("TextLabel")
+        textLabel.Name = "RoleLabel"
+        textLabel.Size = UDim2.new(1, 0, 1, 0)
+        textLabel.BackgroundTransparency = 1
+        textLabel.Font = Enum.Font.SourceSansBold
+        textLabel.TextSize = 18
+        textLabel.Parent = esp
+    end
+
+    local label = esp:FindFirstChild("RoleLabel")
+    label.Text = player.Name .. " | " .. roleName
+    label.TextColor3 = roleColor
+    label.TextStrokeTransparency = 0
+end
+
+-- Mise à jour au démarrage
+for _, player in pairs(Players:GetPlayers()) do
+    if player ~= localPlayer then
+        createOrUpdateESP(player)
+        player.CharacterAdded:Connect(function()
+            wait(0.1)
+            createOrUpdateESP(player)
+        end)
+    end
+end
+
+-- Mise à jour quand un joueur rejoint
+Players.PlayerAdded:Connect(function(player)
+    if player ~= localPlayer then
+        player.CharacterAdded:Connect(function()
+            wait(0.1)
+            createOrUpdateESP(player)
+        end)
+    end
+end)
+
+-- Boucle pour actualiser l’ESP régulièrement
+while true do
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= localPlayer and player.Character then
+            createOrUpdateESP(player)
+        end
+    end
+    wait(0.5)
+end
