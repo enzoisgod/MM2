@@ -1,0 +1,290 @@
+-- Effexe MM2 Panel by enzoisgod
+
+-- Services
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
+-- Variables
+local loading = true
+
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "EffexeMM2"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = game:GetService("CoreGui")
+
+-- Main Frame
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0, 360, 0, 450)
+main.Position = UDim2.new(0.5, -180, 0.5, -225)
+main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+main.BorderSizePixel = 0
+main.Parent = screenGui
+
+-- Rainbow Border (using UIStroke with rainbow effect)
+local border = Instance.new("UIStroke")
+border.Parent = main
+border.Thickness = 3
+border.LineJoinMode = Enum.LineJoinMode.Round
+border.Color = Color3.fromHSV(0,1,1)
+
+-- Rainbow effect for border
+local hue = 0
+RunService.Heartbeat:Connect(function()
+	hue = (hue + 0.001) % 1
+	border.Color = Color3.fromHSV(hue, 1, 1)
+end)
+
+-- Title Bar
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 40)
+titleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = main
+
+-- Title Text
+local titleText = Instance.new("TextLabel")
+titleText.Size = UDim2.new(1, 0, 1, 0)
+titleText.BackgroundTransparency = 1
+titleText.Text = "Effexe MM2"
+titleText.Font = Enum.Font.GothamBold
+titleText.TextSize = 20
+titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleText.Parent = titleBar
+
+-- By enzoisgod text with rainbow effect
+local byText = Instance.new("TextLabel")
+byText.Size = UDim2.new(0, 120, 0, 18)
+byText.Position = UDim2.new(1, -125, 1, -20)
+byText.BackgroundTransparency = 1
+byText.Font = Enum.Font.GothamBold
+byText.TextSize = 14
+byText.Text = "by enzoisgod"
+byText.TextColor3 = Color3.fromHSV(0,1,1)
+byText.TextXAlignment = Enum.TextXAlignment.Right
+byText.Parent = main
+
+-- Rainbow effect for byText
+local hueBy = 0
+RunService.Heartbeat:Connect(function()
+	hueBy = (hueBy + 0.002) % 1
+	byText.TextColor3 = Color3.fromHSV(hueBy, 1, 1)
+end)
+
+-- Loading Label
+local loadingLabel = Instance.new("TextLabel")
+loadingLabel.Size = UDim2.new(1, 0, 0, 30)
+loadingLabel.Position = UDim2.new(0, 0, 0, 50)
+loadingLabel.BackgroundTransparency = 1
+loadingLabel.Text = "Chargement..."
+loadingLabel.Font = Enum.Font.GothamBold
+loadingLabel.TextSize = 18
+loadingLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+loadingLabel.Parent = main
+
+-- Loading animation dots
+local dots = ""
+spawn(function()
+	while loading do
+		wait(0.5)
+		dots = dots .. "."
+		if #dots > 3 then
+			dots = ""
+		end
+		loadingLabel.Text = "Chargement"..dots
+	end
+end)
+
+-- Container for buttons (hidden until loaded)
+local container = Instance.new("Frame")
+container.Size = UDim2.new(1, -20, 1, -100)
+container.Position = UDim2.new(0, 10, 0, 90)
+container.BackgroundTransparency = 1
+container.Parent = main
+container.Visible = false
+
+-- Helper function to create buttons
+local function createButton(text, posY)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(1, 0, 0, 40)
+	btn.Position = UDim2.new(0, 0, 0, posY)
+	btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	btn.BorderSizePixel = 0
+	btn.Text = text
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 18
+	btn.TextColor3 = Color3.fromRGB(220, 220, 220)
+	btn.AutoButtonColor = false
+	btn.Parent = container
+
+	btn.MouseEnter:Connect(function()
+		btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+	end)
+	btn.MouseLeave:Connect(function()
+		btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	end)
+	return btn
+end
+
+-- Buttons
+local buttons = {}
+
+buttons.esp = createButton("ESP (Hitbox)", 0)
+buttons.fly = createButton("Fly", 50)
+buttons.tpLobby = createButton("TP Lobby", 100)
+buttons.tpMap = createButton("TP Map", 150)
+buttons.coinFarm = createButton("Coin Farmer", 200)
+buttons.killAll = createButton("Kill All", 250)
+
+-- ESP Script
+buttons.esp.MouseButton1Click:Connect(function()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/enzoisgod/MM2/refs/heads/main/ESP%20hitbox"))()
+end)
+
+-- Fly Script
+local flying = false
+local flySpeed = 50
+local flyBodyVelocity, flyBodyGyro
+
+buttons.fly.MouseButton1Click:Connect(function()
+	flying = not flying
+	if flying then
+		local character = LocalPlayer.Character
+		if not character then return end
+		local root = character:FindFirstChild("HumanoidRootPart")
+		if not root then return end
+
+		flyBodyVelocity = Instance.new("BodyVelocity")
+		flyBodyVelocity.Velocity = Vector3.new(0,0,0)
+		flyBodyVelocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+		flyBodyVelocity.Parent = root
+
+		flyBodyGyro = Instance.new("BodyGyro")
+		flyBodyGyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
+		flyBodyGyro.Parent = root
+
+		UIS.InputBegan:Connect(function(input, gameProcessed)
+			if gameProcessed then return end
+			if flying then
+				if input.KeyCode == Enum.KeyCode.W then
+					flyBodyVelocity.Velocity = workspace.CurrentCamera.CFrame.LookVector * flySpeed
+				elseif input.KeyCode == Enum.KeyCode.S then
+					flyBodyVelocity.Velocity = -workspace.CurrentCamera.CFrame.LookVector * flySpeed
+				elseif input.KeyCode == Enum.KeyCode.A then
+					flyBodyVelocity.Velocity = -workspace.CurrentCamera.CFrame.RightVector * flySpeed
+				elseif input.KeyCode == Enum.KeyCode.D then
+					flyBodyVelocity.Velocity = workspace.CurrentCamera.CFrame.RightVector * flySpeed
+				end
+			end
+		end)
+
+		UIS.InputEnded:Connect(function(input)
+			if flying then
+				if input.KeyCode == Enum.KeyCode.W or input.KeyCode == Enum.KeyCode.S or input.KeyCode == Enum.KeyCode.A or input.KeyCode == Enum.KeyCode.D then
+					flyBodyVelocity.Velocity = Vector3.new(0,0,0)
+				end
+			end
+		end)
+	else
+		if flyBodyVelocity then flyBodyVelocity:Destroy() end
+		if flyBodyGyro then flyBodyGyro:Destroy() end
+	end
+end)
+
+-- TP Lobby
+buttons.tpLobby.MouseButton1Click:Connect(function()
+	if HumanoidRootPart then
+		HumanoidRootPart.CFrame = CFrame.new(113.187, 144.25, 31.937)
+	end
+end)
+
+-- TP Map
+buttons.tpMap.MouseButton1Click:Connect(function()
+	if HumanoidRootPart then
+		HumanoidRootPart.CFrame = CFrame.new(-9318.1748, 236.3776, -27.1791)
+	end
+end)
+
+-- Coin Farmer
+local coinFarmRunning = false
+buttons.coinFarm.MouseButton1Click:Connect(function()
+	coinFarmRunning = not coinFarmRunning
+	if coinFarmRunning then
+		buttons.coinFarm.Text = "Coin Farmer (ON)"
+		spawn(function()
+			while coinFarmRunning do
+				for _, coin in pairs(workspace:GetDescendants()) do
+					if coin.Name == "Coin" and coin:IsA("BasePart") then
+						HumanoidRootPart.CFrame = coin.CFrame + Vector3.new(0, 3, 0)
+						wait(0.3)
+					end
+				end
+				wait(0.1)
+			end
+		end)
+	else
+		buttons.coinFarm.Text = "Coin Farmer"
+	end
+end)
+
+-- Kill All (enemies)
+buttons.killAll.MouseButton1Click:Connect(function()
+	for _, player in pairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character:FindFirstChild("HumanoidRootPart") then
+			local humanoid = player.Character.Humanoid
+			local root = player.Character.HumanoidRootPart
+			-- Simple kill by setting health to 0
+			humanoid.Health = 0
+			wait(0.1)
+		end
+	end
+end)
+
+-- After loading, hide loading label and show container
+wait(2) -- Simulate loading time
+loading = false
+loadingLabel.Visible = false
+container.Visible = true
+
+-- Drag & Drop functionality for main panel
+local dragging, dragInput, dragStart, startPos
+
+local function update(input)
+	local delta = input.Position - dragStart
+	main.Position = UDim2.new(
+		startPos.X.Scale,
+		startPos.X.Offset + delta.X,
+		startPos.Y.Scale,
+		startPos.Y.Offset + delta.Y
+	)
+end
+
+main.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = main.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+main.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement then
+		dragInput = input
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		update(input)
+	end
+end)
